@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mineLaburo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#F05948; --coral-2:#D8412C; --coral-soft:#FDE8E4; --coral-light:#F7A290;
+    --purple:#3B1164; --purple-2:#2A0B49; --purple-soft:#ECE5F3;
+    --ink:#44404F; --muted:#8A8594; --line:#EDE9F2; --bg:#F5F3F7; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Raleway',sans-serif; background:var(--bg); color:var(--ink); min-height:100vh;}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{background:var(--purple); color:#fff; height:66px; padding:0 28px; display:flex;
+          align-items:center; gap:24px; position:sticky; top:0; z-index:20; overflow:hidden;}
+  .topbar .ribbon{position:absolute; left:38%; top:-46px; width:150px; height:150px;
+       background:radial-gradient(circle at 30% 30%, var(--coral) 0 30%, transparent 32%),
+       radial-gradient(circle at 70% 70%, var(--coral-2) 0 18%, transparent 20%); opacity:.35;}
+  .brand{font-size:22px; font-weight:800; letter-spacing:.3px; z-index:2; white-space:nowrap;}
+  .brand .pick{color:var(--coral); margin:0 1px;}
+  .mainnav{display:flex; gap:4px; z-index:2;}
+  .mainnav button{background:none; border:none; color:#cbb8e0; font-family:inherit; font-size:14px;
+                  font-weight:700; padding:8px 15px; border-radius:10px; cursor:pointer; transition:.15s;}
+  .mainnav button:hover{color:#fff;} .mainnav button.on{background:rgba(255,255,255,.12); color:#fff;}
+  .qm{background:#fff !important; color:var(--purple) !important;}
+  .qm:hover{background:var(--coral-soft) !important;}
+  .spacer{flex:1;}
+  .roletoggle{display:flex; background:rgba(255,255,255,.12); border-radius:11px; padding:3px; z-index:2;}
+  .roletoggle button{background:none; border:none; color:#cbb8e0; font-family:inherit; font-size:12.5px;
+                     font-weight:700; padding:6px 13px; border-radius:8px; cursor:pointer;}
+  .roletoggle button.on{background:#fff; color:var(--purple);}
+  .icons{display:flex; align-items:center; gap:16px; z-index:2;}
+  .bell{position:relative; font-size:20px; cursor:pointer;}
+  .bell .dot{position:absolute; top:-4px; right:-5px; background:var(--coral); color:#fff; font-size:10px;
+             font-weight:800; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+  .avatar{width:36px; height:36px; border-radius:50%; background:var(--coral); color:#fff; font-weight:800;
+          font-size:13px; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 24px 60px;}
+  .screen{display:none;} .screen.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  /* ---------- HOME (dos columnas) ---------- */
+  .home-grid{display:grid; grid-template-columns:280px minmax(0,1fr); gap:26px; align-items:start;}
+  .home-grid > aside{position:sticky; top:90px;}  /* queda fija mientras el feed scrollea */
+  @media(max-width:860px){ .home-grid{grid-template-columns:1fr;} .home-grid > aside{position:static;} }
+  .side-card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; margin-bottom:20px;}
+  .side-card h3{font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:14px;}
+  .story{font-size:14px; font-weight:600; color:var(--ink); padding:9px 0; border-bottom:1px solid var(--line); cursor:pointer;}
+  .story:hover{color:var(--coral);} .story:last-of-type{border-bottom:none;}
+  .linkbtn{margin-top:12px; display:inline-flex; align-items:center; gap:8px; background:var(--purple-soft);
+           color:var(--purple); font-weight:700; font-size:13px; padding:9px 14px; border-radius:10px; cursor:pointer; border:none; font-family:inherit;}
+  .news{border-radius:12px; overflow:hidden; margin-bottom:14px; border:1px solid var(--line);}
+  .news .img{height:92px; background:linear-gradient(120deg,var(--purple),var(--coral));}
+  .news .img.b{background:linear-gradient(120deg,var(--coral-2),var(--purple-2));}
+  .news .txt{padding:11px 13px;} .news .txt b{font-size:13.5px; color:var(--ink); display:block; line-height:1.3;}
+  .news .txt span{font-size:12px; color:var(--muted);}
+
+  .search{width:100%; background:var(--card); border:1px solid var(--line); border-radius:13px; padding:13px 18px;
+          font-family:inherit; font-size:14.5px; color:var(--ink); margin-bottom:20px;}
+  .search::placeholder{color:var(--muted);}
+  .feed-title{font-size:22px; font-weight:800; color:var(--purple); margin-bottom:16px;}
+
+  /* tarjeta de oferta (home trabajador) */
+  .fcard{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 24px; margin-bottom:16px; position:relative;}
+  .fcard .clogo{position:absolute; top:20px; right:22px; width:46px; height:46px; border-radius:50%;
+                background:var(--purple); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center;}
+  .fcard h4{font-size:20px; font-weight:800; color:var(--purple); margin-bottom:3px; padding-right:56px;}
+  .fcard .place{font-size:13px; color:var(--muted); margin-bottom:12px;}
+  .tags{display:flex; flex-wrap:wrap; gap:8px;}
+  .tag{font-size:12px; font-weight:600; padding:5px 12px; border-radius:999px; background:var(--purple-soft); color:var(--purple);}
+  .tag.hot{background:var(--coral-soft); color:var(--coral-2);}
+  .fcard .foot{display:flex; justify-content:space-between; align-items:flex-end; margin-top:16px;}
+  .pop{font-size:12.5px; font-weight:800; color:var(--coral);}
+  .more{font-size:13px; font-weight:700; color:var(--purple); cursor:pointer;}
+  .more:hover{color:var(--coral);}
+
+  /* tarjeta de perfil (home empresa) */
+  .pcard{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 24px; margin-bottom:16px;}
+  .pcard .top{display:flex; align-items:center; gap:16px;}
+  .pcard .pav{width:64px; height:64px; border-radius:50%; color:#fff; font-weight:800; font-size:20px; flex-shrink:0;
+              display:flex; align-items:center; justify-content:center;}
+  .pcard .who b{font-size:18px; color:var(--ink); display:block;}
+  .pcard .who span{font-size:13.5px; color:var(--muted);}
+  .pcard .tags{margin-top:14px;}
+  .pcard .foot{text-align:right; margin-top:12px;}
+
+  /* ---------- QUICK MATCH (swipe) ---------- */
+  .qm-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .qm-head h1{font-size:24px; font-weight:800; color:var(--purple);}
+  .qm-head .hist{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--purple);
+                 background:var(--card); border:1px solid var(--line); padding:8px 14px; border-radius:11px; cursor:pointer;}
+  .qm-sub{color:var(--muted); font-size:14px; margin-bottom:22px;}
+  .deck{position:relative; max-width:440px; margin:0 auto; min-height:440px;}
+  .mcard{background:var(--card); border:1px solid var(--line); border-radius:24px; padding:26px;
+         box-shadow:0 16px 44px rgba(59,17,100,.13); transition:transform .35s ease, opacity .35s ease;}
+  .mcard.gone-left{transform:translateX(-140%) rotate(-13deg); opacity:0;}
+  .mcard.gone-right{transform:translateX(140%) rotate(13deg); opacity:0;}
+  .mcard .head{display:flex; align-items:center; gap:13px; margin-bottom:16px;}
+  .mcard .mlogo{width:52px; height:52px; border-radius:14px; background:var(--coral); color:#fff; font-weight:800;
+                font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .mcard .mlogo.round{border-radius:50%; background:var(--purple);}
+  .mcard .head .co{font-weight:700; font-size:15px; color:var(--ink);}
+  .mcard .head .lo{font-size:12.5px; color:var(--muted);}
+  .mcard h2{font-size:30px; font-weight:800; color:var(--purple); line-height:1.1; margin-bottom:14px;}
+  .mcard .tags{margin-bottom:18px;}
+  .interes{background:var(--purple-soft); border-radius:12px; padding:12px 14px; margin-bottom:16px;}
+  .interes small{font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--muted);}
+  .interes b{display:block; font-size:15px; color:var(--purple); margin-top:2px;}
+  .salary{font-size:27px; font-weight:800; color:var(--coral);}
+  .matchbar{margin-top:16px;}
+  .matchbar .row{display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; margin-bottom:6px;}
+  .matchbar .row .lbl{color:var(--muted); letter-spacing:1px; text-transform:uppercase; font-size:11px;}
+  .matchbar .row b{color:var(--coral);}
+  .bar{height:9px; border-radius:999px; background:var(--line); overflow:hidden;}
+  .bar > i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--purple),var(--coral));}
+
+  .actions{display:flex; justify-content:center; gap:60px; margin-top:26px; max-width:440px; margin-left:auto; margin-right:auto;}
+  .act{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .abtn{width:72px; height:72px; border-radius:22px; background:var(--card); border:1px solid var(--line);
+        font-size:28px; cursor:pointer; box-shadow:0 8px 20px rgba(59,17,100,.10); transition:transform .12s;}
+  .abtn:active{transform:scale(.9);}
+  .abtn.no{color:var(--muted);} .abtn.yes{color:var(--coral); border-color:var(--coral-soft); background:var(--coral-soft);}
+  .act .cap{font-size:13px; font-weight:700; color:var(--muted);}
+  .empty{text-align:center; color:var(--muted); padding:80px 20px; font-weight:600;}
+
+  /* ---------- CREAR OFERTA ---------- */
+  .crear-grid{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:28px; align-items:start;}
+  @media(max-width:860px){ .crear-grid{grid-template-columns:1fr;} }
+  .form-card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:26px;}
+  .form-card h1{font-size:23px; font-weight:800; color:var(--purple); margin-bottom:4px;}
+  .form-card .lead{font-size:14px; color:var(--muted); margin-bottom:22px;}
+  .field{margin-bottom:16px;} .field label{display:block; font-size:12px; font-weight:700; letter-spacing:.5px;
+         text-transform:uppercase; color:var(--muted); margin-bottom:7px;}
+  .field input, .field textarea{width:100%; border:2px solid var(--line); border-radius:12px; padding:12px 14px;
+         font-family:inherit; font-size:14.5px; color:var(--ink); resize:vertical;}
+  .field input:focus, .field textarea:focus{outline:none; border-color:var(--coral-light);}
+  .field textarea{min-height:100px;}
+  .primary{background:var(--coral); color:#fff; border:none; border-radius:12px; padding:13px 22px;
+           font-family:inherit; font-weight:800; font-size:15px; cursor:pointer;}
+  .primary:hover{background:var(--coral-2);} .primary:disabled{opacity:.6; cursor:default;}
+  .result{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px; position:sticky; top:90px;}
+  .result h3{font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:14px;}
+  .result .status{font-size:14px; color:var(--muted);}
+  .result .status.err{color:var(--coral-2); font-weight:600;}
+  .result .apiline{font-size:11px; color:var(--muted); margin-top:14px; word-break:break-all;}
+  .livechip{display:inline-block; padding:6px 13px; margin:4px 4px 0 0; border-radius:999px;
+            background:var(--purple-soft); color:var(--purple); font-size:13px; font-weight:700;
+            animation:pop .3s ease;}
+  @keyframes pop{from{transform:scale(.7); opacity:0;} to{transform:scale(1); opacity:1;}}
+
+  #toast{position:fixed; left:50%; bottom:34px; transform:translateX(-50%) translateY(20px); background:var(--purple);
+         color:#fff; padding:14px 24px; border-radius:999px; font-weight:700; font-size:15px; opacity:0;
+         pointer-events:none; transition:.3s; box-shadow:0 8px 24px rgba(59,17,100,.3); z-index:30;}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="ribbon"></div>
+    <div class="brand">mine<span class="pick">⛏</span>Laburo</div>
+    <div class="mainnav">
+      <button data-s="inicio" class="on" onclick="go(this)">Inicio</button>
+      <button data-s="quickmatch" class="qm" onclick="go(this)">Quick Match</button>
+      <button data-s="crear" onclick="go(this)">＋ Crear oferta</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="roletoggle">
+      <button id="r-trab" class="on" onclick="setRole('trabajador')">Trabajador</button>
+      <button id="r-emp" onclick="setRole('empresa')">Empresa</button>
+    </div>
+    <div class="icons">
+      <div class="bell" onclick="toast('No tienes notificaciones nuevas')">🔔<span class="dot">1</span></div>
+      <div class="avatar">L</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- ===== INICIO ===== -->
+    <section class="screen active" id="inicio">
+      <div class="home-grid">
+        <aside>
+          <div class="side-card">
+            <h3>Nuevo</h3>
+            <div class="story">🎙️ Historias que Escalan — el podcast</div>
+            <div class="story">Ep. 12: Mujeres liderando en faena</div>
+            <div class="story">Ep. 11: De ayudante a supervisor</div>
+            <button class="linkbtn" onclick="toast('Abriendo el podcast...')">Escuchar 🔗</button>
+          </div>
+          <div class="side-card">
+            <h3>Noticias</h3>
+            <div class="news"><div class="img"></div><div class="txt"><b>El litio y el futuro de la minería chilena</b><span>Hace 2 h</span></div></div>
+            <div class="news"><div class="img b"></div><div class="txt"><b>Tendencias en automatización de faenas</b><span>Ayer</span></div></div>
+          </div>
+        </aside>
+        <main>
+          <input class="search" id="search" placeholder="🔎 Buscar...">
+          <div class="feed-title" id="feed-title"></div>
+          <div id="feed"></div>
+        </main>
+      </div>
+    </section>
+
+    <!-- ===== QUICK MATCH ===== -->
+    <section class="screen" id="quickmatch">
+      <div class="qm-head">
+        <h1>Quick Match</h1>
+        <div class="hist" onclick="toast('Historial (próximamente)')">↺ Historial</div>
+      </div>
+      <div class="qm-sub" id="qm-sub"></div>
+      <div class="deck" id="deck"></div>
+      <div class="actions">
+        <div class="act"><button class="abtn no" onclick="swipe('left')">✕</button><span class="cap">← Paso</span></div>
+        <div class="act"><button class="abtn yes" onclick="swipe('right')">⛏</button><span class="cap">Me interesa →</span></div>
+      </div>
+    </section>
+  </div>
+
+    <!-- ===== CREAR OFERTA (en vivo con Clarita) ===== -->
+    <section class="screen" id="crear">
+      <div class="crear-grid">
+        <div class="form-card">
+          <h1>Crear oferta de trabajo</h1>
+          <div class="lead">Escribe la oferta y Clarita le pone las etiquetas al instante.</div>
+          <div class="field">
+            <label>Cargo</label>
+            <input id="of-cargo" placeholder="Ej: Operador de camión de extracción">
+          </div>
+          <div class="field">
+            <label>Empresa y faena</label>
+            <input id="of-empresa" placeholder="Ej: Codelco · División El Teniente">
+          </div>
+          <div class="field">
+            <label>Descripción / requisitos</label>
+            <textarea id="of-desc" placeholder="Ej: Se requiere operador de camión minero y maquinaria pesada, con licencia clase D. Deseable experiencia en mantención mecánica."></textarea>
+          </div>
+          <button class="primary" id="of-btn" onclick="crearOferta()">Publicar y etiquetar ⛏</button>
+        </div>
+        <div class="result">
+          <h3>Etiquetas de Clarita</h3>
+          <div id="of-status" class="status">Aún no has publicado. Completa el formulario y aprieta el botón.</div>
+          <div id="of-tags" style="margin-top:10px;"></div>
+          <div class="apiline" id="of-api"></div>
+        </div>
+      </div>
+    </section>
+
+  <div id="toast"></div>
+
+<script>
+/* ============ DATOS DE EJEMPLO (luego vendrán de Clarita + base de datos) ============ */
+// Ofertas: las ve el TRABAJADOR (en su home y en su Quick Match)
+const OFERTAS = [
+  {sigla:"CO", empresa:"Codelco", lugar:"División El Teniente, O'Higgins", cargo:"Geólogo",
+   tags:[["Geología","hot"],["Subterránea",""],["Turno 5x2",""],["Contrato indefinido",""]],
+   sueldo:"$3.670.000", match:77, popular:true},
+  {sigla:"CO", empresa:"Codelco", lugar:"Faena Gabriela Mistral", cargo:"Gerente Comercial",
+   tags:[["7x7",""],["Área comercial","hot"],["Indefinido",""]], sueldo:"$4.200.000", match:71, popular:true},
+  {sigla:"F", empresa:"FCh", lugar:"Santiago", cargo:"Administrador RRHH",
+   tags:[["42 hrs",""],["RRHH","hot"],["Presencial",""]], sueldo:"$1.900.000", match:63, popular:false},
+  {sigla:"C", empresa:"Caterpillar", lugar:"Antofagasta", cargo:"Mantención Maquinaria",
+   tags:[["Temporal",""],["Mantención","hot"],["Turno 7x7",""]], sueldo:"$2.500.000", match:58, popular:false},
+];
+// Perfiles: los ve la EMPRESA (en su home y en su Quick Match)
+const PERFILES = [
+  {ini:"MA", nombre:"María González", lugar:"Antofagasta", cargo:"Geóloga", color:"#3B1164",
+   tags:[["Geología","hot"],["Topografía",""],["Inglés",""],["Lic. clase B",""]],
+   interesado:"Geólogo · Div. El Teniente", match:77},
+  {ini:"CM", nombre:"Carlos Medina", lugar:"Antofagasta", cargo:"Gerente Comercial", color:"#F05948",
+   tags:[["Área comercial","hot"],["Liderazgo",""]], interesado:"Gerente Comercial · Codelco", match:84},
+  {ini:"RD", nombre:"Ramiro Díaz", lugar:"Calama", cargo:"Ingeniero en Minas", color:"#3B1164",
+   tags:[["Ingeniería","hot"],["Planificación",""]], interesado:"Jefe de operaciones · BHP", match:69},
+  {ini:"AD", nombre:"Antonia Díaz", lugar:"Copiapó", cargo:"Prevencionista", color:"#8A8594",
+   tags:[["Prevención","hot"],["HSE",""],["Terreno",""]], interesado:"Prevencionista · Anglo", match:73},
+];
+
+let role = 'trabajador';
+let idx = {trabajador:0, empresa:0};
+
+/* ============ NAVEGACIÓN ============ */
+function go(btn){
+  document.querySelectorAll('.mainnav button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById(btn.dataset.s).classList.add('active');
+}
+function setRole(r){
+  role = r;
+  document.getElementById('r-trab').classList.toggle('on', r==='trabajador');
+  document.getElementById('r-emp').classList.toggle('on', r==='empresa');
+  renderHome(); renderDeck();
+}
+
+/* ============ HOME ============ */
+function renderHome(){
+  const title = document.getElementById('feed-title');
+  const feed = document.getElementById('feed');
+  if(role==='trabajador'){
+    title.textContent = 'Ofertas disponibles';
+    feed.innerHTML = OFERTAS.map(o=>`
+      <div class="fcard">
+        <div class="clogo">${o.sigla}</div>
+        <h4>${o.cargo}</h4>
+        <div class="place">${o.empresa} · ${o.lugar}</div>
+        <div class="tags">${o.tags.map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join('')}</div>
+        <div class="foot"><span class="pop">${o.popular?'¡Popular!':''}</span><span class="more" onclick="toast('Abriendo oferta...')">Ver más ›</span></div>
+      </div>`).join('');
+  } else {
+    title.textContent = 'Perfiles que te pueden interesar';
+    feed.innerHTML = PERFILES.map(p=>`
+      <div class="pcard">
+        <div class="top">
+          <div class="pav" style="background:${p.color}">${p.ini}</div>
+          <div class="who"><b>${p.nombre}</b><span>${p.cargo} · ${p.lugar}</span></div>
+        </div>
+        <div class="tags">${p.tags.map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join('')}</div>
+        <div class="foot"><span class="more" onclick="toast('Abriendo perfil...')">Ver más ›</span></div>
+      </div>`).join('');
+  }
+}
+
+/* ============ QUICK MATCH (swipe) ============ */
+function renderDeck(){
+  const deck = document.getElementById('deck');
+  const sub = document.getElementById('qm-sub');
+  const i = idx[role];
+  if(role==='trabajador'){
+    sub.textContent = 'Desliza en las ofertas que te interesan.';
+    if(i>=OFERTAS.length){ deck.innerHTML='<div class="empty">¡Viste todas las ofertas por ahora! 🪨</div>'; return; }
+    const o=OFERTAS[i];
+    deck.innerHTML=`<article class="mcard" id="topcard">
+      <div class="head"><div class="mlogo">${o.sigla}</div>
+        <div><div class="co">${o.empresa}</div><div class="lo">📍 ${o.lugar}</div></div></div>
+      <h2>${o.cargo}</h2>
+      <div class="tags">${o.tags.map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join('')}</div>
+      <div class="salary">${o.sueldo}</div>
+      <div class="matchbar"><div class="row"><span class="lbl">Match</span><b>${o.match}%</b></div>
+        <div class="bar"><i style="width:${o.match}%"></i></div></div>
+    </article>`;
+  } else {
+    sub.textContent = 'Desliza en los perfiles que te interesan.';
+    if(i>=PERFILES.length){ deck.innerHTML='<div class="empty">¡Revisaste todos los perfiles por ahora! 🪨</div>'; return; }
+    const p=PERFILES[i];
+    deck.innerHTML=`<article class="mcard" id="topcard">
+      <div class="head"><div class="mlogo round">${p.ini}</div>
+        <div><div class="co">${p.nombre}</div><div class="lo">📍 ${p.lugar}</div></div></div>
+      <h2>${p.cargo}</h2>
+      <div class="tags">${p.tags.map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join('')}</div>
+      <div class="interes"><small>Interesado en</small><b>${p.interesado}</b></div>
+      <div class="matchbar"><div class="row"><span class="lbl">Match</span><b>${p.match}%</b></div>
+        <div class="bar"><i style="width:${p.match}%"></i></div></div>
+    </article>`;
+  }
+}
+function swipe(dir){
+  const card=document.getElementById('topcard'); if(!card) return;
+  card.classList.add(dir==='right'?'gone-right':'gone-left');
+  if(dir==='right'){
+    const nombre = role==='trabajador' ? OFERTAS[idx[role]].cargo : PERFILES[idx[role]].nombre.split(' ')[0];
+    // simulamos el doble opt-in: a veces hay match de inmediato
+    toast(Math.random()<0.5 ? '🎉 ¡Match con '+nombre+'!' : '⛏ ¡Te interesa! Avisaremos si hay match');
+  }
+  setTimeout(()=>{ idx[role]++; renderDeck(); }, 300);
+}
+
+/* ============ CREAR OFERTA EN VIVO (llama a la API de Clarita en Render) ============ */
+// 👇 la dirección de tu API en Render (la misma del index.html que ya funciona)
+const API_CLARITA = "https://minelaburo2.onrender.com/etiquetar";
+document.getElementById('of-api').textContent = "Conectando a: " + API_CLARITA;
+
+async function crearOferta(){
+  const cargo = document.getElementById('of-cargo').value.trim();
+  const empresa = document.getElementById('of-empresa').value.trim();
+  const desc = document.getElementById('of-desc').value.trim();
+  const status = document.getElementById('of-status');
+  const tagsBox = document.getElementById('of-tags');
+  const btn = document.getElementById('of-btn');
+
+  if(!cargo || !desc){ status.className='status err'; status.textContent='Escribe al menos el cargo y la descripción.'; tagsBox.innerHTML=''; return; }
+
+  btn.disabled = true;
+  status.className='status'; status.textContent='⏳ Clarita está leyendo la oferta... (la 1ª vez puede tardar ~40s mientras despierta)';
+  tagsBox.innerHTML='';
+
+  try{
+    const res = await fetch(API_CLARITA, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ texto: cargo + ". " + desc })
+    });
+    if(!res.ok){ throw new Error("La API respondió con código " + res.status); }
+    const data = await res.json();
+    const etiquetas = data.etiquetas || [];
+
+    status.textContent = '✅ Oferta publicada y etiquetada por Clarita:';
+    tagsBox.innerHTML = etiquetas.length
+      ? etiquetas.map(e=>`<span class="livechip">${e}</span>`).join('')
+      : '<span class="status">Clarita no encontró etiquetas claras. Prueba con una descripción más concreta.</span>';
+
+    // "guardar de mentira": sumamos la oferta arriba en el feed del trabajador
+    OFERTAS.unshift({
+      sigla: (empresa[0]||'M').toUpperCase(), empresa: empresa||'Empresa', lugar:'Publicada recién',
+      cargo: cargo, tags: etiquetas.slice(0,4).map(e=>[e,"hot"]), sueldo:'A convenir', match: 100, popular:true
+    });
+    idx.trabajador = 0;
+    renderHome(); renderDeck();
+    toast('🎉 ¡Oferta publicada! Míra la en Inicio');
+  }catch(e){
+    status.className='status err';
+    status.innerHTML = '❌ No pude conectar con Clarita.<br>Detalle: ' + e.message
+      + '<br>Revisa que la API de Render esté despierta (ábrela con /docs).';
+    console.error(e);
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+/* ============ TOAST ============ */
+let tmr;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(tmr); tmr=setTimeout(()=>t.classList.remove('show'),1900); }
+
+renderHome(); renderDeck();
+</script>
+</body>
+</html>
